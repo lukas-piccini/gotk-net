@@ -1,0 +1,43 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output of `go build` and `go run`
+*.a
+*.o
+*.lo
+*.obj
+*.elf
+*.bin
+*.build
+*.log
+
+# Go workspace & module cache
+/pkg/
+/bin/
+/vendor/ # if you're using Go modules and not vendoring
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Dependency management files (if using tools like Glide, dep)
+Gopkg.lock
+Gopkg.toml
+
+# Test binary artifacts
+*.coverprofile
+*.test
+*.prof
+
+# OS-specific
+.DS_Store
+Thumbs.db
