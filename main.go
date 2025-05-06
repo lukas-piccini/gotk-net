@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gotk-net/net/commands"
 	"gotk-net/net/ui"
 	"strings"
 
@@ -25,8 +24,6 @@ func main() {
 	gtk.Init(nil)
 
 	win, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
-
-	connections := commands.Wifi()
 
 	if err != nil {
 		fmt.Println(err)
@@ -55,36 +52,7 @@ func main() {
 	separator, _ := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
 	mainBox.Add(separator)
 
-	vpnBox := ui.CollapsableListNew("Vpn", true)
-	listBox := ui.CollapsableListNew(fmt.Sprintf("Wi-fi (%d)", len(connections)), true)
-	ui.AddClass(listBox.List, "listbox")
-
 	var listRows []FilterRow
-
-	for _, item := range connections {
-		row, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
-		ssidLabel, _ := gtk.LabelNew(item.Ssid)
-
-		if item.Connected {
-			ui.AddClass(row, "connected")
-		}
-
-		row.Add(ssidLabel)
-
-		ui.AddClass(row, "listbox-row")
-
-		eventBox, _ := gtk.EventBoxNew()
-		eventBox.Add(row)
-		eventBox.Connect("button-press-event", func() {
-			fmt.Println("SSID: ", item.Ssid)
-		})
-
-		listBoxRow, _ := gtk.ListBoxRowNew()
-		listBoxRow.Add(eventBox)
-
-		listRows = append(listRows, FilterRow{Text: item.Ssid, Container: listBoxRow})
-		listBox.Add(listBoxRow)
-	}
 
 	searchInput.Connect("changed", func() {
 		text, _ := searchInput.GetText()
@@ -101,11 +69,16 @@ func main() {
 	scroll, _ := gtk.ScrolledWindowNew(nil, nil)
 	scroll.SetVExpand(true)
 	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-	scroll.Add(listBox.Component)
 
-	mainBox.Add(vpnBox.Component)
+	vpn := ui.VpnListNew("Vpn")
+	wifi := ui.WifiListNew("Wifi")
+	mainBox.Add(vpn.Component)
+	mainBox.Add(wifi.Component)
+
 	mainBox.Add(scroll)
 
+	info, _ := gtk.LabelNew("Reload connections (Ctrl + r)")
+	mainBox.Add(info)
 	win.Add(mainBox)
 
 	win.Connect("destroy", func() {
@@ -130,16 +103,26 @@ func main() {
 		all: unset;
 	}
 
+	.search-input {
+		padding: 8px;
+	}
+
 	.header-button {
 		font-weight: bold;
 		padding: 12px 4px;
 		color: white;
 	}
 
+	spinner {
+		min-width: 16px;
+		min-height: 16px;
+	}
+
 	separator {
 		background: #4d6c88;
 	}
 
+	.header-button:hover, .header-button:active, header-button:focus,
 	row:active, row:hover, row:selected {
 		background: #1D2D44;
 	}
@@ -159,7 +142,7 @@ func main() {
 	}
 
 	.listbox-row {
-		padding: 8px 12px;
+		padding: 8px 16px;
 	}
 		`, strings.Split(font, ",")[0], strings.Split(font, ",")[1])
 	provider, _ := gtk.CssProviderNew()

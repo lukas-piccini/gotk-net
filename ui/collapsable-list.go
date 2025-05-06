@@ -16,6 +16,7 @@ func CollapsableListNew(title string, open bool) CollapsableList {
 	header, _ := gtk.ButtonNewWithLabel(title)
 	revealer, _ := gtk.RevealerNew()
 	list, _ := gtk.ListBoxNew()
+	AddClass(list, "listbox")
 
 	headerChild, _ := header.GetChild()
 	headerLabel, _ := headerChild.(*gtk.Label)
@@ -24,7 +25,12 @@ func CollapsableListNew(title string, open bool) CollapsableList {
 	styleContext, _ := header.GetStyleContext()
 	styleContext.AddClass("header-button")
 
-	revealer.Add(list)
+	scroll, _ := gtk.ScrolledWindowNew(nil, nil)
+	scroll.SetVExpand(true)
+	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+	scroll.Add(list)
+
+	revealer.Add(scroll)
 	revealer.SetTransitionType(gtk.REVEALER_TRANSITION_TYPE_SLIDE_DOWN)
 	revealer.SetTransitionDuration(250)
 
