@@ -10,11 +10,6 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
-type FilterRow struct {
-	Text      string
-	Container *gtk.ListBoxRow
-}
-
 var font string
 
 func main() {
@@ -52,32 +47,15 @@ func main() {
 	separator, _ := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
 	mainBox.Add(separator)
 
-	var listRows []FilterRow
-
-	searchInput.Connect("changed", func() {
-		text, _ := searchInput.GetText()
-
-		for _, row := range listRows {
-			if strings.Contains(strings.ToLower(row.Text), strings.ToLower(text)) {
-				row.Container.ShowAll()
-			} else {
-				row.Container.Hide()
-			}
-		}
-	})
-
-	scroll, _ := gtk.ScrolledWindowNew(nil, nil)
-	scroll.SetVExpand(true)
-	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-
 	vpn := ui.VpnListNew("Vpn")
 	wifi := ui.WifiListNew("Wifi")
 	mainBox.Add(vpn.Component)
 	mainBox.Add(wifi.Component)
 
-	mainBox.Add(scroll)
-
 	info, _ := gtk.LabelNew("Reload connections (Ctrl + r)")
+	infoBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	infoBox.SetVExpand(true)
+	mainBox.Add(infoBox)
 	mainBox.Add(info)
 	win.Add(mainBox)
 

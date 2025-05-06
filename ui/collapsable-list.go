@@ -26,7 +26,7 @@ func CollapsableListNew(title string, open bool) CollapsableList {
 	styleContext.AddClass("header-button")
 
 	scroll, _ := gtk.ScrolledWindowNew(nil, nil)
-	scroll.SetVExpand(true)
+	scroll.SetPropagateNaturalHeight(true)
 	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 	scroll.Add(list)
 
