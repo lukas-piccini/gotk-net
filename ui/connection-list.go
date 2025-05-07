@@ -5,16 +5,19 @@ import (
 )
 
 type LoadFunc func(*ConnectionList)
+type FilterFunc func(*ConnectionList, string)
 
 type ConnectionList struct {
 	loading          bool
 	loadingContainer *gtk.ListBoxRow
 	collapse         CollapsableList
+	filter           FilterFunc
 	load             LoadFunc
+	filterRow        map[string]*gtk.ListBoxRow
 	Component        *gtk.Box
 }
 
-func connectionListNew(title string, loadFunc LoadFunc) *ConnectionList {
+func connectionListNew(title string, loadFunc LoadFunc, filterFunc FilterFunc) *ConnectionList {
 	collapse := CollapsableListNew(title, true)
 
 	cl := &ConnectionList{
@@ -22,6 +25,8 @@ func connectionListNew(title string, loadFunc LoadFunc) *ConnectionList {
 		collapse:  collapse,
 		Component: collapse.Component,
 		load:      loadFunc,
+		filter:    filterFunc,
+		filterRow: make(map[string]*gtk.ListBoxRow),
 	}
 
 	return cl
@@ -62,5 +67,11 @@ func (cl *ConnectionList) ToggleLoading() {
 func (cl *ConnectionList) Load() {
 	if cl.load != nil {
 		cl.load(cl)
+	}
+}
+
+func (cl *ConnectionList) Filter(search string) {
+	if cl.filter != nil {
+		cl.filter(cl, search)
 	}
 }

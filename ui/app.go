@@ -41,7 +41,6 @@ func AppNew() *App {
 	searchInput, _ := gtk.EntryNew()
 	searchInput.SetPlaceholderText("Type here")
 	filter := new(string)
-	setFilter(searchInput, filter)
 	AddClass(searchInput, "search-input")
 
 	inputBox.Add(searchInput)
@@ -70,12 +69,15 @@ func AppNew() *App {
 
 	LoadTheme()
 
-	return &App{
+	app := &App{
 		Window: win,
 		vpn:    vpn,
 		wifi:   wifi,
 		filter: *filter,
 	}
+
+	app.setFilter(searchInput, filter)
+	return app
 }
 
 func (w *App) Run() {
@@ -98,11 +100,12 @@ func (w *App) attachDefaultEvents() {
 	})
 }
 
-func setFilter(entry *gtk.Entry, field *string) {
+func (w *App) setFilter(entry *gtk.Entry, field *string) {
 	entry.Connect("changed", func() {
 		text, _ := entry.GetText()
 		*field = strings.ToLower(text)
-		fmt.Println("filter: ", field)
+		w.wifi.Filter(text)
+		w.vpn.Filter(text)
 	})
 }
 
