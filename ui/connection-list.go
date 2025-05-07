@@ -41,6 +41,7 @@ func (cl *ConnectionList) ToggleLoading() {
 		ClearList(*cl.collapse.List)
 
 		listBoxRow, _ := gtk.ListBoxRowNew()
+		AddClass(listBoxRow, "listbox-row")
 		box, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 16)
 
 		spinner, _ := gtk.SpinnerNew()

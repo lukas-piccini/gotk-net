@@ -47,15 +47,21 @@ func main() {
 	separator, _ := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
 	mainBox.Add(separator)
 
+	scroll, _ := gtk.ScrolledWindowNew(nil, nil)
+	scroll.SetVExpand(true)
+	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+	scrollBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+
 	vpn := ui.VpnListNew("Vpn")
 	wifi := ui.WifiListNew("Wifi")
-	mainBox.Add(vpn.Component)
-	mainBox.Add(wifi.Component)
+	scrollBox.Add(vpn.Component)
+	scrollBox.Add(wifi.Component)
+	scroll.Add(scrollBox)
 
 	info, _ := gtk.LabelNew("Reload connections (Ctrl + r)")
 	infoBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	infoBox.SetVExpand(true)
-	mainBox.Add(infoBox)
+	mainBox.Add(scroll)
 	mainBox.Add(info)
 	win.Add(mainBox)
 
