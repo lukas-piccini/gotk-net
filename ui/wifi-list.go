@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gotk-net/net/commands"
 
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gtk"
 )
@@ -24,6 +25,7 @@ func WifiListNew(title string) *WifiList {
 				x.ToggleLoading()
 
 				for _, item := range connections {
+					item := item
 					row, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 					nameLabel, _ := gtk.LabelNew(item.Ssid)
 
@@ -37,12 +39,17 @@ func WifiListNew(title string) *WifiList {
 
 					eventBox, _ := gtk.EventBoxNew()
 					eventBox.Add(row)
-					eventBox.Connect("button-press-event", func() {
-						fmt.Println("name: ", item.Ssid)
-					})
 
 					listBoxRow, _ := gtk.ListBoxRowNew()
 					listBoxRow.Add(eventBox)
+
+					listBoxRow.Connect("key-press-event", func(win *gtk.ListBoxRow, ev *gdk.Event) {
+						key := gdk.EventKeyNewFromEvent(ev)
+
+						if key.KeyVal() == gdk.KEY_Return {
+							fmt.Println("name: ", item.Ssid)
+						}
+					})
 
 					//listRows = append(listRows, FilterRow{Text: item.Name, Container: listBoxRow})
 					x.collapse.List.Add(listBoxRow)

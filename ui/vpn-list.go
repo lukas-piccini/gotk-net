@@ -10,7 +10,8 @@ type VpnList struct {
 	ConnectionList
 }
 
-func VpnListNew(title string) *ConnectionList {
+func VpnListNew(title string) *VpnList {
+	vpn := &VpnList{}
 	vpnList := connectionListNew(title, func(x *ConnectionList) {
 		x.ToggleLoading()
 
@@ -44,7 +45,8 @@ func VpnListNew(title string) *ConnectionList {
 		}
 	})
 
+	vpn.ConnectionList = *vpnList
 	vpnList.Load()
 
-	return vpnList
+	return vpn
 }
