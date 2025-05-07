@@ -9,10 +9,11 @@ import (
 
 type VpnList struct {
 	ConnectionList
+	Searchable
 }
 
-func VpnListNew(title string) *VpnList {
-	v := &VpnList{}
+func VpnListNew(title string, filter Searchable) *VpnList {
+	v := &VpnList{Searchable: filter}
 	vpnList := connectionListNew(title, v.load, v.filter)
 
 	v.ConnectionList = *vpnList
@@ -29,6 +30,9 @@ func (v *VpnList) load(x *ConnectionList) {
 	x.ToggleLoading()
 
 	for _, item := range connections {
+		v := v
+		item := item
+
 		row, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 		nameLabel, _ := gtk.LabelNew(item.Name)
 
@@ -51,6 +55,8 @@ func (v *VpnList) load(x *ConnectionList) {
 
 		x.filterRow[item.Name] = listBoxRow
 		x.collapse.Add(listBoxRow)
+
+		x.Filter(v.GetFilter())
 	}
 }
 

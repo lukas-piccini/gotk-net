@@ -12,10 +12,11 @@ import (
 
 type WifiList struct {
 	ConnectionList
+	Searchable
 }
 
-func WifiListNew(title string) *WifiList {
-	w := &WifiList{}
+func WifiListNew(title string, filter Searchable) *WifiList {
+	w := &WifiList{Searchable: filter}
 	connList := connectionListNew(title, w.load, w.filter)
 	w.ConnectionList = *connList
 	w.Load()
@@ -32,6 +33,7 @@ func (w *WifiList) load(x *ConnectionList) {
 			x.ToggleLoading()
 
 			for _, item := range connections {
+				w := w
 				item := item
 				row, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 				nameLabel, _ := gtk.LabelNew(item.Ssid)
@@ -61,6 +63,8 @@ func (w *WifiList) load(x *ConnectionList) {
 				x.filterRow[item.Ssid] = listBoxRow
 				x.collapse.List.Add(listBoxRow)
 				listBoxRow.ShowAll()
+
+				x.Filter(w.GetFilter())
 			}
 		})
 	}()

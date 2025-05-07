@@ -9,6 +9,10 @@ import (
 	"github.com/gotk3/gotk3/gtk"
 )
 
+type Searchable interface {
+	GetFilter() string
+}
+
 type App struct {
 	Window *gtk.Window
 	vpn    *VpnList
@@ -54,8 +58,10 @@ func AppNew() *App {
 	scroll.SetPolicy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 	scrollBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 
-	vpn := VpnListNew("Vpn")
-	wifi := WifiListNew("Wifi")
+	app := &App{}
+
+	vpn := VpnListNew("Vpn", app)
+	wifi := WifiListNew("Wifi", app)
 	scrollBox.Add(vpn.Component)
 	scrollBox.Add(wifi.Component)
 	scroll.Add(scrollBox)
@@ -69,14 +75,12 @@ func AppNew() *App {
 
 	LoadTheme()
 
-	app := &App{
-		Window: win,
-		vpn:    vpn,
-		wifi:   wifi,
-		filter: *filter,
-	}
+	app.Window = win
+	app.vpn = vpn
+	app.wifi = wifi
+	app.filter = *filter
 
-	app.setFilter(searchInput, filter)
+	app.setFilter(searchInput)
 	return app
 }
 
@@ -100,10 +104,10 @@ func (w *App) attachDefaultEvents() {
 	})
 }
 
-func (w *App) setFilter(entry *gtk.Entry, field *string) {
+func (w *App) setFilter(entry *gtk.Entry) {
 	entry.Connect("changed", func() {
 		text, _ := entry.GetText()
-		*field = strings.ToLower(text)
+		w.filter = strings.ToLower(text)
 		w.wifi.Filter(text)
 		w.vpn.Filter(text)
 	})
@@ -172,4 +176,8 @@ func LoadTheme() {
 
 	screen, _ := gdk.ScreenGetDefault()
 	gtk.AddProviderForScreen(screen, provider, gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+}
+
+func (a *App) GetFilter() string {
+	return a.filter
 }
