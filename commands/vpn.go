@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"maps"
 	"os/exec"
 	"slices"
@@ -13,7 +14,15 @@ type VpnConnection struct {
 	Connected bool
 }
 
-func Vpn() []VpnConnection {
+type Vpn struct {
+	Connections []VpnConnection
+}
+
+func VpnNew() *Vpn {
+	return &Vpn{}
+}
+
+func (v *Vpn) Load() {
 	list, err := exec.Command("nmcli", "-t", "-f", "NAME,UUID,ACTIVE,TYPE", "con").Output()
 
 	if err != nil {
@@ -42,5 +51,23 @@ func Vpn() []VpnConnection {
 		result[name] = VpnConnection{Name: name, Uuid: uuid, Connected: connected}
 	}
 
-	return slices.Collect(maps.Values(result))
+	v.Connections = slices.Collect(maps.Values(result))
+}
+
+func (c *VpnConnection) ToggleConnection() {
+	var command string
+
+	if c.Connected {
+		command = "down"
+	} else {
+		command = "up"
+	}
+
+	result, err := exec.Command("nmcli", "con", command, c.Uuid).Output()
+
+	if err != nil {
+		fmt.Println("Error connecting to vpn ", c.Name)
+	}
+
+	fmt.Println(string(result))
 }

@@ -151,7 +151,7 @@ func LoadTheme() {
 	row:active, row:selected {
 		background: #1D2D44;
 	}
-	
+
 	.main {
 		padding: 12px;
 		background: #0D1321;
@@ -161,13 +161,28 @@ func LoadTheme() {
 		background: #0D1321;
 	}
 
-	.listbox-row.connected {
+	.listbox-row .connected-label {
 		color: green;
-		font-weight: bold;
 	}
 
 	.listbox-row {
 		padding: 8px 16px;
+	}
+
+	.wifi-low {
+		color: red;
+	}
+
+	.wifi-medium {
+		color: orange;
+	}
+
+	.wifi-high {
+		color: yellow;
+	}
+
+	.wifi-strong {
+		color: green;
 	}
 `, strings.Split(font, ",")[0], strings.Split(font, ",")[1])
 

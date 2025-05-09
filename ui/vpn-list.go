@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 	"gotk-net/net/commands"
 	"strings"
@@ -25,11 +26,12 @@ func VpnListNew(title string, filter Searchable) *VpnList {
 func (v *VpnList) load(x *ConnectionList) {
 	x.ToggleLoading()
 
-	connections := commands.Vpn()
+	vpnCommand := commands.VpnNew()
+	vpnCommand.Load()
 
 	x.ToggleLoading()
 
-	for _, item := range connections {
+	for _, item := range vpnCommand.Connections {
 		v := v
 		item := item
 
@@ -38,6 +40,7 @@ func (v *VpnList) load(x *ConnectionList) {
 
 		if item.Connected {
 			AddClass(row, "connected")
+			AddClass(nameLabel, "connected-label")
 		}
 
 		row.Add(nameLabel)
@@ -46,12 +49,18 @@ func (v *VpnList) load(x *ConnectionList) {
 
 		eventBox, _ := gtk.EventBoxNew()
 		eventBox.Add(row)
-		eventBox.Connect("button-press-event", func() {
-			fmt.Println("name: ", item.Uuid)
-		})
 
 		listBoxRow, _ := gtk.ListBoxRowNew()
 		listBoxRow.Add(eventBox)
+
+		listBoxRow.Connect("key-press-event", func(win *gtk.ListBoxRow, ev *gdk.Event) {
+			key := gdk.EventKeyNewFromEvent(ev)
+
+			if key.KeyVal() == gdk.KEY_Return {
+				fmt.Println("name: ", item.Name)
+				item.ToggleConnection()
+			}
+		})
 
 		x.filterRow[item.Name] = listBoxRow
 		x.collapse.Add(listBoxRow)

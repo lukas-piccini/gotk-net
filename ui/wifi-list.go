@@ -27,22 +27,37 @@ func WifiListNew(title string, filter Searchable) *WifiList {
 func (w *WifiList) load(x *ConnectionList) {
 	x.ToggleLoading()
 	go func() {
-		connections := commands.Wifi()
+		wifiCommand := commands.WifiNew()
+		wifiCommand.Load()
 
 		glib.IdleAdd(func() {
 			x.ToggleLoading()
 
-			for _, item := range connections {
+			for _, item := range wifiCommand.Connections {
 				w := w
 				item := item
 				row, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
-				nameLabel, _ := gtk.LabelNew(item.Ssid)
 
+				nameLabel, _ := gtk.LabelNew(item.Ssid)
+				nameLabel.SetXAlign(0)
+				row.PackStart(nameLabel, true, true, 0)
+
+				connectionPowerIcon, _ := gtk.LabelNew("\uf1eb")
+				AddClass(connectionPowerIcon, item.GetPowerClass())
+				connectionPowerIcon.SetUseMarkup(true)
+				connectionPowerIcon.SetXAlign(1)
+				row.PackEnd(connectionPowerIcon, false, false, 0)
+
+				if item.Protected {
+					protectionIcon, _ := gtk.LabelNew("\uf023")
+					protectionIcon.SetUseMarkup(true)
+					protectionIcon.SetXAlign(1)
+					row.PackEnd(protectionIcon, false, false, 16)
+				}
 				if item.Connected {
 					AddClass(row, "connected")
+					AddClass(nameLabel, "connected-label")
 				}
-
-				row.Add(nameLabel)
 
 				AddClass(row, "listbox-row")
 
@@ -57,6 +72,7 @@ func (w *WifiList) load(x *ConnectionList) {
 
 					if key.KeyVal() == gdk.KEY_Return {
 						fmt.Println("name: ", item.Ssid)
+						item.ToggleConnection()
 					}
 				})
 
