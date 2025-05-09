@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"cmp"
 	"fmt"
 	"maps"
 	"os/exec"
@@ -57,7 +58,14 @@ func (w *Wifi) Load() {
 		result[ssid] = WifiConnection{Connected: connected, Ssid: ssid, Signal: signal, Protected: protected}
 	}
 
-	w.Connections = slices.Collect(maps.Values(result))
+	resultArray := slices.Collect(maps.Values(result))
+	slices.SortFunc(resultArray, sortWifi)
+
+	w.Connections = resultArray
+}
+
+func sortWifi(a, b WifiConnection) int {
+	return cmp.Compare(b.Signal, a.Signal)
 }
 
 func (c *WifiConnection) ToggleConnection() {
