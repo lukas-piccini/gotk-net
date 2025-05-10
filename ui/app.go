@@ -13,11 +13,17 @@ type Searchable interface {
 	GetFilter() string
 }
 
+type WithPassword interface {
+	TogglePassword()
+}
+
 type App struct {
-	Window *gtk.Window
-	vpn    *VpnList
-	wifi   *WifiList
-	filter string
+	Window   *gtk.Window
+	inputBox *gtk.Box
+	vpn      *VpnList
+	wifi     *WifiList
+	password *Password
+	filter   string
 }
 
 func AppNew() *App {
@@ -40,7 +46,7 @@ func AppNew() *App {
 	mainBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 8)
 	AddClass(mainBox, "main")
 
-	inputBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	inputBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 8)
 
 	searchInput, _ := gtk.EntryNew()
 	searchInput.SetPlaceholderText("Type here")
@@ -48,10 +54,9 @@ func AppNew() *App {
 	AddClass(searchInput, "search-input")
 
 	inputBox.Add(searchInput)
-	mainBox.Add(inputBox)
-
 	separator, _ := gtk.SeparatorNew(gtk.ORIENTATION_HORIZONTAL)
-	mainBox.Add(separator)
+	inputBox.Add(separator)
+	mainBox.Add(inputBox)
 
 	scroll, _ := gtk.ScrolledWindowNew(nil, nil)
 	scroll.SetVExpand(true)
@@ -60,8 +65,10 @@ func AppNew() *App {
 
 	app := &App{}
 
+	password := PasswordNew()
 	vpn := VpnListNew("Vpn", app)
-	wifi := WifiListNew("Wifi", app)
+	wifi := WifiListNew("Wifi", app, app)
+	scrollBox.Add(password.Component)
 	scrollBox.Add(vpn.Component)
 	scrollBox.Add(wifi.Component)
 	scroll.Add(scrollBox)
@@ -76,6 +83,8 @@ func AppNew() *App {
 	LoadTheme()
 
 	app.Window = win
+	app.inputBox = inputBox
+	app.password = password
 	app.vpn = vpn
 	app.wifi = wifi
 	app.filter = *filter
@@ -195,4 +204,18 @@ func LoadTheme() {
 
 func (a *App) GetFilter() string {
 	return a.filter
+}
+
+func (a *App) TogglePassword() {
+	a.password.ToggleDisplay()
+
+	if a.password.visible {
+		a.inputBox.Hide()
+		a.vpn.Component.Hide()
+		a.wifi.Component.Hide()
+	} else {
+		a.inputBox.ShowAll()
+		a.vpn.Component.ShowAll()
+		a.wifi.Component.ShowAll()
+	}
 }

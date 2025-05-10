@@ -13,10 +13,11 @@ import (
 type WifiList struct {
 	ConnectionList
 	Searchable
+	WithPassword
 }
 
-func WifiListNew(title string, filter Searchable) *WifiList {
-	w := &WifiList{Searchable: filter}
+func WifiListNew(title string, filter Searchable, togglePassword WithPassword) *WifiList {
+	w := &WifiList{Searchable: filter, WithPassword: togglePassword}
 	connList := connectionListNew(title, w.load, w.filter)
 	w.ConnectionList = *connList
 	w.Load()
@@ -43,7 +44,7 @@ func (w *WifiList) load(x *ConnectionList) {
 				row.PackStart(nameLabel, true, true, 0)
 
 				connectionPowerIcon, _ := gtk.LabelNew("\uf1eb")
-				AddClass(connectionPowerIcon, item.GetPowerClass())
+				//AddClass(connectionPowerIcon, item.GetPowerClass())
 				connectionPowerIcon.SetUseMarkup(true)
 				connectionPowerIcon.SetXAlign(1)
 				row.PackEnd(connectionPowerIcon, false, false, 0)
@@ -72,7 +73,11 @@ func (w *WifiList) load(x *ConnectionList) {
 
 					if key.KeyVal() == gdk.KEY_Return {
 						fmt.Println("name: ", item.Ssid)
-						item.ToggleConnection()
+						if item.Protected {
+							w.TogglePassword()
+						} else {
+							item.ToggleConnection()
+						}
 					}
 				})
 
