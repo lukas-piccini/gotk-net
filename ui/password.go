@@ -1,17 +1,22 @@
 package ui
 
 import (
+	"github.com/gotk3/gotk3/gdk"
 	"github.com/gotk3/gotk3/gtk"
 )
 
 type Password struct {
-	Component *gtk.Box
-	revelear  *gtk.Revealer
-	loading   bool
-	visible   bool
+	WithPassword
+	Component         *gtk.Box
+	IsShowingPassword bool
+	revelear          *gtk.Revealer
+	loading           bool
+	visible           bool
+	entry             *gtk.Entry
+	visibilityButton  *gtk.Button
 }
 
-func PasswordNew() *Password {
+func PasswordNew(app WithPassword) *Password {
 	container, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
 	revealer, _ := gtk.RevealerNew()
 	revealer.SetTransitionType(gtk.REVEALER_TRANSITION_TYPE_SLIDE_DOWN)
@@ -37,17 +42,42 @@ func PasswordNew() *Password {
 	revealer.Add(revealerContainer)
 	container.Add(revealer)
 
-	pass := &Password{revelear: revealer, visible: false, loading: false, Component: container}
+	pass := &Password{revelear: revealer, visible: false, loading: false, Component: container, entry: input, IsShowingPassword: false, visibilityButton: viewPasswordButton, WithPassword: app}
+
+	viewPasswordButton.Connect("clicked", func(_ *gtk.Button) {
+		pass.setPasswordShow(!pass.IsShowingPassword)
+	})
+
+	container.Connect("key-press-event", func(win *gtk.Box, ev *gdk.Event) {
+		key := gdk.EventKeyNewFromEvent(ev)
+
+		if key.KeyVal() == gdk.KEY_Escape {
+			pass.TogglePassword()
+		}
+	})
 
 	return pass
 }
 
-func (p *Password) ToggleDisplay() {
-	if p.visible {
-		p.revelear.SetRevealChild(false)
-		p.visible = false
+func (p *Password) setPasswordShow(show bool) {
+	p.IsShowingPassword = show
+	p.entry.SetVisibility(show)
+
+	if show {
+		p.visibilityButton.SetLabel("\uf070")
 	} else {
-		p.revelear.SetRevealChild(true)
-		p.visible = true
+		p.visibilityButton.SetLabel("\uf06e")
+	}
+}
+
+func (p *Password) SetVisible(visible bool) {
+	p.revelear.SetRevealChild(visible)
+	p.visible = visible
+
+	if visible {
+		p.entry.GrabFocus()
+	} else {
+		p.entry.SetText("")
+		p.setPasswordShow(false)
 	}
 }

@@ -17,6 +17,11 @@ type WithPassword interface {
 	TogglePassword()
 }
 
+type SearchableWithPassword interface {
+	Searchable
+	WithPassword
+}
+
 type App struct {
 	Window   *gtk.Window
 	inputBox *gtk.Box
@@ -36,7 +41,7 @@ func AppNew() *App {
 	}
 
 	win.SetTitle("gotk-net")
-	win.SetDefaultSize(600, 400)
+	win.SetDefaultSize(500, 300)
 	win.SetPosition(gtk.WIN_POS_CENTER)
 	win.SetKeepAbove(true)
 	win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DIALOG)
@@ -65,9 +70,9 @@ func AppNew() *App {
 
 	app := &App{}
 
-	password := PasswordNew()
+	password := PasswordNew(app)
 	vpn := VpnListNew("Vpn", app)
-	wifi := WifiListNew("Wifi", app, app)
+	wifi := WifiListNew("Wifi", app)
 	scrollBox.Add(password.Component)
 	scrollBox.Add(vpn.Component)
 	scrollBox.Add(wifi.Component)
@@ -107,7 +112,7 @@ func (w *App) attachDefaultEvents() {
 	w.Window.Connect("key-press-event", func(win *gtk.Window, ev *gdk.Event) {
 		key := gdk.EventKeyNewFromEvent(ev)
 
-		if key.KeyVal() == gdk.KEY_Escape {
+		if key.KeyVal() == gdk.KEY_Escape && !w.password.visible {
 			gtk.MainQuit()
 		}
 	})
@@ -207,7 +212,7 @@ func (a *App) GetFilter() string {
 }
 
 func (a *App) TogglePassword() {
-	a.password.ToggleDisplay()
+	a.password.SetVisible(!a.password.visible)
 
 	if a.password.visible {
 		a.inputBox.Hide()

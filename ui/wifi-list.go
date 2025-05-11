@@ -16,8 +16,8 @@ type WifiList struct {
 	WithPassword
 }
 
-func WifiListNew(title string, filter Searchable, togglePassword WithPassword) *WifiList {
-	w := &WifiList{Searchable: filter, WithPassword: togglePassword}
+func WifiListNew(title string, app SearchableWithPassword) *WifiList {
+	w := &WifiList{Searchable: app, WithPassword: app}
 	connList := connectionListNew(title, w.load, w.filter)
 	w.ConnectionList = *connList
 	w.Load()
