@@ -77,9 +77,10 @@ func (w *WifiList) load(x *ConnectionList) {
 						connectionAlreadyExists := item.CheckIfConnectionAlreadyExists(w.connection.Connections)
 
 						if item.Protected && !connectionAlreadyExists {
+							w.SetSelectedItem(&item)
 							w.TogglePassword()
 						} else {
-							item.ToggleConnection(connectionAlreadyExists)
+							item.ToggleConnection(connectionAlreadyExists, "")
 						}
 					}
 				})

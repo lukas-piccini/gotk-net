@@ -12,6 +12,7 @@ type Password struct {
 	revelear          *gtk.Revealer
 	loading           bool
 	visible           bool
+	itemLabel         *gtk.Label
 	entry             *gtk.Entry
 	visibilityButton  *gtk.Button
 }
@@ -23,6 +24,16 @@ func PasswordNew(app WithPassword) *Password {
 	revealer.SetRevealChild(false)
 
 	revealerContainer, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 8)
+
+	itemLabelBox, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 4)
+	itemLabelPrefix, _ := gtk.LabelNew("Accessing:")
+	itemLabel, _ := gtk.LabelNew("")
+	itemLabel.SetXAlign(0)
+	AddClass(itemLabelPrefix, "connecting-item-prefix")
+	AddClass(itemLabel, "connecting-item")
+
+	itemLabelBox.Add(itemLabelPrefix)
+	itemLabelBox.Add(itemLabel)
 
 	passwordLabel, _ := gtk.LabelNew("Password")
 	passwordLabel.SetXAlign(0)
@@ -39,12 +50,14 @@ func PasswordNew(app WithPassword) *Password {
 	AddClass(viewPasswordButton, "reveal-password-button")
 	inputBox.PackStart(viewPasswordButton, false, false, 0)
 
+	revealerContainer.Add(itemLabelBox)
 	revealerContainer.Add(passwordLabel)
 	revealerContainer.Add(inputBox)
 	revealer.Add(revealerContainer)
+
 	container.Add(revealer)
 
-	pass := &Password{revelear: revealer, visible: false, loading: false, Component: container, entry: input, IsShowingPassword: false, visibilityButton: viewPasswordButton, WithPassword: app}
+	pass := &Password{revelear: revealer, visible: false, loading: false, Component: container, entry: input, IsShowingPassword: false, visibilityButton: viewPasswordButton, WithPassword: app, itemLabel: itemLabel}
 
 	viewPasswordButton.Connect("clicked", func(_ *gtk.Button) {
 		pass.setPasswordShow(!pass.IsShowingPassword)
@@ -55,6 +68,17 @@ func PasswordNew(app WithPassword) *Password {
 
 		if key.KeyVal() == gdk.KEY_Escape {
 			pass.TogglePassword()
+		}
+	})
+
+	input.Connect("key-press-event", func(win *gtk.Entry, ev *gdk.Event) {
+		key := gdk.EventKeyNewFromEvent(ev)
+
+		if key.KeyVal() == gdk.KEY_Return {
+			password, _ := input.GetText()
+			item := app.GetSelectedItem()
+
+			item.ToggleConnection(false, password)
 		}
 	})
 
@@ -78,6 +102,7 @@ func (p *Password) SetVisible(visible bool) {
 
 	if visible {
 		p.entry.GrabFocus()
+		p.itemLabel.SetText(p.GetSelectedItem().Ssid)
 	} else {
 		p.entry.SetText("")
 		p.setPasswordShow(false)

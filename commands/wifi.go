@@ -68,7 +68,7 @@ func sortWifi(a, b WifiConnection) int {
 	return cmp.Compare(b.Signal, a.Signal)
 }
 
-func (c *WifiConnection) ToggleConnection(exists bool) {
+func (c *WifiConnection) ToggleConnection(exists bool, password string) {
 	command := []string{"nmcli"}
 
 	if exists {
@@ -92,12 +92,18 @@ func (c *WifiConnection) ToggleConnection(exists bool) {
 
 	command = append(command, c.Ssid)
 
+	if !exists && c.Protected {
+		command = append(command, "password")
+		command = append(command, password)
+	}
+
 	fmt.Println(command)
 
 	result, err := exec.Command(command[0], command[1:]...).Output()
 
 	if err != nil {
-		fmt.Println("Error connecting to network ", c.Ssid)
+		exec.Command("nmcli", "con", "delete", c.Ssid)
+		fmt.Println("Error connecting to network ", c.Ssid, err)
 	}
 
 	if result != nil {

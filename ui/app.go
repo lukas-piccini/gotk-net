@@ -16,6 +16,8 @@ type Searchable interface {
 
 type WithPassword interface {
 	TogglePassword()
+	SetSelectedItem(item *commands.WifiConnection)
+	GetSelectedItem() *commands.WifiConnection
 }
 
 type SearchableWithPassword interface {
@@ -24,13 +26,14 @@ type SearchableWithPassword interface {
 }
 
 type App struct {
-	Window      *gtk.Window
-	inputBox    *gtk.Box
-	connections *commands.Connection
-	vpn         *VpnList
-	wifi        *WifiList
-	password    *Password
-	filter      string
+	Window       *gtk.Window
+	inputBox     *gtk.Box
+	connections  *commands.Connection
+	vpn          *VpnList
+	wifi         *WifiList
+	password     *Password
+	filter       string
+	selectedItem *commands.WifiConnection
 }
 
 func AppNew() *App {
@@ -213,6 +216,15 @@ func LoadTheme() {
 	.reveal-password-button:focus {
 		opacity: 0.7;
 	}
+	
+	.connecting-item-prefix {
+		font-weight: bold;
+	}
+
+	.connecting-item{
+		font-weight: bold;
+		text-decoration: underline;
+	}
 `, strings.Split(font, ",")[0], strings.Split(font, ",")[1])
 
 	provider, _ := gtk.CssProviderNew()
@@ -238,4 +250,12 @@ func (a *App) TogglePassword() {
 		a.vpn.Component.ShowAll()
 		a.wifi.Component.ShowAll()
 	}
+}
+
+func (a *App) SetSelectedItem(item *commands.WifiConnection) {
+	a.selectedItem = item
+}
+
+func (a *App) GetSelectedItem() *commands.WifiConnection {
+	return a.selectedItem
 }
