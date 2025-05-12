@@ -3,6 +3,7 @@ package ui
 import (
 	"flag"
 	"fmt"
+	"gotk-net/net/commands"
 	"strings"
 
 	"github.com/gotk3/gotk3/gdk"
@@ -23,12 +24,13 @@ type SearchableWithPassword interface {
 }
 
 type App struct {
-	Window   *gtk.Window
-	inputBox *gtk.Box
-	vpn      *VpnList
-	wifi     *WifiList
-	password *Password
-	filter   string
+	Window      *gtk.Window
+	inputBox    *gtk.Box
+	connections *commands.Connection
+	vpn         *VpnList
+	wifi        *WifiList
+	password    *Password
+	filter      string
 }
 
 func AppNew() *App {
@@ -41,12 +43,15 @@ func AppNew() *App {
 	}
 
 	win.SetTitle("gotk-net")
-	win.SetDefaultSize(500, 300)
+	win.SetDefaultSize(500, 400)
 	win.SetPosition(gtk.WIN_POS_CENTER)
 	win.SetKeepAbove(true)
 	win.SetTypeHint(gdk.WINDOW_TYPE_HINT_DIALOG)
 	win.SetModal(true)
 	win.SetDecorated(false)
+
+	comm := commands.ConnectionNew()
+	comm.Load()
 
 	mainBox, _ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 8)
 	AddClass(mainBox, "main")
@@ -72,7 +77,7 @@ func AppNew() *App {
 
 	password := PasswordNew(app)
 	vpn := VpnListNew("Vpn", app)
-	wifi := WifiListNew("Wifi", app)
+	wifi := WifiListNew("Wifi", app, comm)
 	scrollBox.Add(password.Component)
 	scrollBox.Add(vpn.Component)
 	scrollBox.Add(wifi.Component)
@@ -90,6 +95,7 @@ func AppNew() *App {
 	app.Window = win
 	app.inputBox = inputBox
 	app.password = password
+	app.connections = comm
 	app.vpn = vpn
 	app.wifi = wifi
 	app.filter = *filter
@@ -197,6 +203,15 @@ func LoadTheme() {
 
 	.wifi-strong {
 		color: green;
+	}
+
+	.password-input {
+		padding: 8px;
+		border: 1px solid gray;
+	}
+
+	.reveal-password-button:focus {
+		opacity: 0.7;
 	}
 `, strings.Split(font, ",")[0], strings.Split(font, ",")[1])
 

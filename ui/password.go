@@ -32,9 +32,11 @@ func PasswordNew(app WithPassword) *Password {
 	input, _ := gtk.EntryNew()
 	input.SetVisibility(false)
 	input.SetInputPurpose(gtk.INPUT_PURPOSE_PASSWORD)
+	AddClass(input, "password-input")
 	inputBox.PackStart(input, false, false, 0)
 
 	viewPasswordButton, _ := gtk.ButtonNewWithLabel("\uf06e")
+	AddClass(viewPasswordButton, "reveal-password-button")
 	inputBox.PackStart(viewPasswordButton, false, false, 0)
 
 	revealerContainer.Add(passwordLabel)

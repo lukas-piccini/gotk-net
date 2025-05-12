@@ -14,10 +14,11 @@ type WifiList struct {
 	ConnectionList
 	Searchable
 	WithPassword
+	connection *commands.Connection
 }
 
-func WifiListNew(title string, app SearchableWithPassword) *WifiList {
-	w := &WifiList{Searchable: app, WithPassword: app}
+func WifiListNew(title string, app SearchableWithPassword, connections *commands.Connection) *WifiList {
+	w := &WifiList{Searchable: app, WithPassword: app, connection: connections}
 	connList := connectionListNew(title, w.load, w.filter)
 	w.ConnectionList = *connList
 	w.Load()
@@ -34,7 +35,7 @@ func (w *WifiList) load(x *ConnectionList) {
 		glib.IdleAdd(func() {
 			x.ToggleLoading()
 
-			for _, item := range wifiCommand.Connections {
+			for _, item := range *wifiCommand.Connections {
 				w := w
 				item := item
 				row, _ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
@@ -73,10 +74,12 @@ func (w *WifiList) load(x *ConnectionList) {
 
 					if key.KeyVal() == gdk.KEY_Return {
 						fmt.Println("name: ", item.Ssid)
-						if item.Protected {
+						connectionAlreadyExists := item.CheckIfConnectionAlreadyExists(w.connection.Connections)
+
+						if item.Protected && !connectionAlreadyExists {
 							w.TogglePassword()
 						} else {
-							item.ToggleConnection()
+							item.ToggleConnection(connectionAlreadyExists)
 						}
 					}
 				})

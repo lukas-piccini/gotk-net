@@ -8,6 +8,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
+	"github.com/gotk3/gotk3/gtk"
 )
 
 type WifiConnection struct {
@@ -18,7 +20,7 @@ type WifiConnection struct {
 }
 
 type Wifi struct {
-	Connections []WifiConnection
+	Connections *[]WifiConnection
 }
 
 func WifiNew() *Wifi {
@@ -44,46 +46,75 @@ func (w *Wifi) Load() {
 		line := strings.Split(network, ":")
 		connected := line[0] == "yes"
 		ssid := line[1]
-		signal, err := strconv.Atoi(line[2])
+		signal, _ := strconv.Atoi(line[2])
 		protected := !(line[3] == "" || line[3] == "--")
 
 		if ssid == "" {
 			continue
 		}
 
-		if err != nil {
-			panic("Error converting signal value to number")
-		}
+		conn := WifiConnection{Connected: connected, Ssid: ssid, Signal: signal, Protected: protected}
 
-		result[ssid] = WifiConnection{Connected: connected, Ssid: ssid, Signal: signal, Protected: protected}
+		result[ssid] = conn
 	}
 
 	resultArray := slices.Collect(maps.Values(result))
 	slices.SortFunc(resultArray, sortWifi)
 
-	w.Connections = resultArray
+	w.Connections = &resultArray
 }
 
 func sortWifi(a, b WifiConnection) int {
 	return cmp.Compare(b.Signal, a.Signal)
 }
 
-func (c *WifiConnection) ToggleConnection() {
-	var command string
+func (c *WifiConnection) ToggleConnection(exists bool) {
+	command := []string{"nmcli"}
 
-	if c.Connected {
-		command = "disconnect"
+	if exists {
+		command = append(command, "con")
+
+		if c.Connected {
+			command = append(command, "down")
+		} else {
+			command = append(command, "up")
+		}
 	} else {
-		command = "connect"
+		command = append(command, "dev")
+		command = append(command, "wifi")
+
+		if c.Connected {
+			command = append(command, "disconnect")
+		} else {
+			command = append(command, "connect")
+		}
 	}
 
-	result, err := exec.Command("nmcli", "dev", "wifi", command, c.Ssid).Output()
+	command = append(command, c.Ssid)
+
+	fmt.Println(command)
+
+	result, err := exec.Command(command[0], command[1:]...).Output()
 
 	if err != nil {
 		fmt.Println("Error connecting to network ", c.Ssid)
 	}
 
-	fmt.Println(string(result))
+	if result != nil {
+		gtk.MainQuit()
+	}
+}
+
+func (c *WifiConnection) CheckIfConnectionAlreadyExists(connections []DefaultConnection) bool {
+	contains := false
+
+	for _, x := range connections {
+		if x.Name == c.Ssid {
+			contains = true
+		}
+	}
+
+	return contains
 }
 
 func (c *WifiConnection) GetPowerClass() string {
